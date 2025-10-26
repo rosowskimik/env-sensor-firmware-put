@@ -1,0 +1,38 @@
+/ {
+	chosen {
+		zephyr,console = &usb_uart;
+	};
+
+	aliases {
+		env-sensor = &main_sensor;
+	};
+};
+
+&i2c0 {
+	status = "okay";
+
+	main_sensor: bme280@76 {
+		compatible = "bosch,bme280";
+		reg = <0x76>;
+	};
+};
+
+&zephyr_udc0 {
+	usb_uart: cdc_acm_uart0 {
+		compatible = "zephyr,cdc-acm-uart";
+		label = "Zephyr USB CDC-ACM";
+		status = "okay";
+	};
+};
+
+&i2c1 {
+	status = "disabled";
+};
+
+&lsm9ds1 {
+	status = "disabled";
+};
+
+&lsm9ds1_mag {
+	status = "disabled";
+};
