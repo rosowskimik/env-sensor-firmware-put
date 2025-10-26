@@ -45,4 +45,20 @@ config APP_SENSOR_THREAD_PRIORITY
 
 endmenu # Sensor Thread Options
 
+menu "Bluetooth Thread Options"
+
+config APP_BLE_STACK_SIZE
+	int "Thread stack size"
+	default 2048
+	help
+	  "Bluetooth thread stack size (in bytes)."
+
+config APP_BLE_THREAD_PRIORITY
+	int "Thread priority"
+	default 9
+	help
+	  "Bluetooth thread priority."
+
+endmenu # Bluetooth Thread Options
+
 endmenu # Application Options
