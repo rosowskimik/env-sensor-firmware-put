@@ -6,4 +6,27 @@ module = APP
 module-str = App
 source "subsys/logging/Kconfig.template.log_config"
 
-endmenu
+config APP_SENSOR_INTERVAL
+	int "Environment Sensor Read Interval"
+	default 5
+	help
+	  The interval between subsequent reads from the environment
+	  sensor (in seconds).
+
+menu "Timer Thread Options"
+
+config APP_TIMER_STACK_SIZE
+	int "Thread stack size"
+	default 256
+	help
+	  "Timer thread stack size (in bytes)."
+
+config APP_TIMER_THREAD_PRIORITY
+	int "Thread priority"
+	default 7
+	help
+	  "Timer thread priority."
+
+endmenu # Timer Thread Options
+
+endmenu # Application Options
