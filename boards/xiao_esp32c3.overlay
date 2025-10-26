@@ -1,0 +1,12 @@
+/ {
+	aliases {
+		env-sensor = &main_sensor;
+	};
+};
+
+&i2c0 {
+	main_sensor: bme280@76 {
+		compatible = "bosch,bme280";
+		reg = <0x76>;
+	};
+};

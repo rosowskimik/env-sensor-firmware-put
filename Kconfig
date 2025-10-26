@@ -29,4 +29,20 @@ config APP_TIMER_THREAD_PRIORITY
 
 endmenu # Timer Thread Options
 
+menu "Sensor Thread Options"
+
+config APP_SENSOR_STACK_SIZE
+	int "Thread stack size"
+	default 1024
+	help
+	  "Sensor thread stack size (in bytes)."
+
+config APP_SENSOR_THREAD_PRIORITY
+	int "Thread priority"
+	default 8
+	help
+	  "Sensor thread priority."
+
+endmenu # Sensor Thread Options
+
 endmenu # Application Options
