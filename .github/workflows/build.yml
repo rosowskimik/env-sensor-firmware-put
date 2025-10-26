@@ -1,0 +1,68 @@
+name: Build Zephyr application
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ZEPHYR_SDK_INSTALL_DIR: /opt/toolchains
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/zephyrproject-rtos/ci-base:v0.28.6
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - board: xiao_esp32c3/esp32c3
+            artifact_name: xiao_esp32c3
+            toolchain: riscv64-zephyr-elf
+          - board: arduino_nano_33_ble/nrf52840
+            artifact_name: arduino_nano_33_ble
+            toolchain: arm-zephyr-eabi
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup West workspace
+        run: |
+          west init -l .
+          west update
+
+      - name: Setup Zephyr SDK
+        run: |
+          west sdk install --install-dir ${ZEPHYR_SDK_INSTALL_DIR} --toolchains ${{ matrix.target.toolchain }}
+
+
+      - name: Fetch blobs
+        if: contains(matrix.target.board, 'esp32c3')
+        run: |
+          west blobs fetch hal_espressif
+
+      - name: Build (${{ matrix.target.board }})
+        run: |
+          west build -b ${{ matrix.target.board }}
+
+      - name: Generate memory-usage report
+        run: |
+          west build -t footprint
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v5
+        with:
+          name: firmware-${{ matrix.target.artifact_name }}
+          path: |
+            build/zephyr/zephyr.bin
+            build/ram.json
+            build/rom.json
+          if-no-files-found: error
