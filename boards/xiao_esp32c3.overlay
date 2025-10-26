@@ -10,3 +10,19 @@
 		reg = <0x76>;
 	};
 };
+
+&spi2 {
+	status = "disabled";
+};
+
+&twai {
+	status = "disabled";
+};
+
+&uart0 {
+	status = "disabled";
+};
+
+&wifi {
+	status = "disabled";
+};
