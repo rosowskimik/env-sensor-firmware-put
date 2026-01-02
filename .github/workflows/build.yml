@@ -37,7 +37,7 @@ jobs:
       - name: Setup West workspace
         run: |
           west init -l .
-          west update
+          west update -n
 
       - name: Setup Zephyr SDK
         run: |
