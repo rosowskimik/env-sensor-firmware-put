@@ -1,6 +1,6 @@
 #include "zbus.h"
 
-#include <zephyr/kernel.h>
+#include <zephyr/init.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/zbus/zbus.h>
 
@@ -29,11 +29,11 @@ static void timer_expiry(struct k_timer *timer)
 
 K_TIMER_DEFINE(env_timer, timer_expiry, NULL);
 
-static void timer_init_thrd()
+static int timer_init()
 {
-	k_timer_start(&env_timer, K_SECONDS(1), K_SECONDS(CONFIG_APP_SENSOR_INTERVAL));
+	k_timer_start(&env_timer, K_SECONDS(3), K_SECONDS(CONFIG_APP_SENSOR_INTERVAL));
 	LOG_INF("timer started");
+	return 0;
 }
 
-K_THREAD_DEFINE(timer_thrd_id, CONFIG_APP_TIMER_STACK_SIZE, timer_init_thrd, NULL, NULL, NULL,
-		CONFIG_APP_TIMER_THREAD_PRIORITY, 0, 0);
+SYS_INIT(timer_init, APPLICATION, CONFIG_APP_TIMER_INIT_PRIORITY);

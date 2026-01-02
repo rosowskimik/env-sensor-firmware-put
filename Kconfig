@@ -13,21 +13,12 @@ config APP_SENSOR_INTERVAL
 	  The interval between subsequent reads from the environment
 	  sensor (in seconds).
 
-menu "Timer Thread Options"
-
-config APP_TIMER_STACK_SIZE
-	int "Thread stack size"
-	default 256
+config APP_TIMER_INIT_PRIORITY
+	int "Timer init priority"
+	default 100
 	help
-	  "Timer thread stack size (in bytes)."
+	  "Timer initialization priority"
 
-config APP_TIMER_THREAD_PRIORITY
-	int "Thread priority"
-	default 7
-	help
-	  "Timer thread priority."
-
-endmenu # Timer Thread Options
 
 menu "Sensor Thread Options"
 
