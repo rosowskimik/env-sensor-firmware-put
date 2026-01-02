@@ -28,110 +28,41 @@
 
 LOG_MODULE_REGISTER(ble, CONFIG_APP_LOG_LEVEL);
 
+typedef uint8_t uint24_t[3];
+
 #define SENSOR_TEMP_NAME  "Temperature Sensor"
 #define SENSOR_PRESS_NAME "Pressure Sensor"
 #define SENSOR_HUMID_NAME "Humidity Sensor"
 
-/* ESS Measurement Descriptor – Sampling Function */
-enum bt_es_measurement_sampling_function {
-	ES_MEASUREMENT_SAMPLING_UNSPECIFIED = 0x00,
-	ES_MEASUREMENT_SAMPLING_INSTANTANEOUS = 0x01,
-	ES_MEASUREMENT_SAMPLING_ARITHMETIC_MEAN = 0x02,
-	ES_MEASUREMENT_SAMPLING_RMS = 0x03,
-	ES_MEASUREMENT_SAMPLING_MAXIMUM = 0x04,
-	ES_MEASUREMENT_SAMPLING_MINIMUM = 0x05,
-	ES_MEASUREMENT_SAMPLING_ACCUMULATED = 0x06,
-	ES_MEASUREMENT_SAMPLING_COUNT = 0x07,
-};
-
-/* ES Measurement Descriptor - Measurement Period */
-enum bt_es_measurement_period {
-	ES_MEASUREMENT_PERIOD_UNSPECIFIED = 0x00,
-};
-
-/* ES Measurement Descriptor - Application */
-enum bt_es_measurement_application {
-	ES_MEASUREMENT_APP_UNSPECIFIED = 0x00,
-	ES_MEASUREMENT_APP_AIR = 0x01,
-	ES_MEASUREMENT_APP_WATER = 0x02,
-	ES_MEASUREMENT_APP_BAROMETRIC = 0x03,
-	ES_MEASUREMENT_APP_SOIL = 0x04,
-	ES_MEASUREMENT_APP_INFRARED = 0x05,
-	ES_MEASUREMENT_APP_MAP_DATABASE = 0x06,
-	ES_MEASUREMENT_APP_BAROMETRIC_ELEVATION_SOURCE = 0x07,
-	ES_MEASUREMENT_APP_GPS_ONLY_ELEVATION_SOURCE = 0x08,
-	ES_MEASUREMENT_APP_GPS_AND_MAP_DATABASE_ELEVATION_SOURCE = 0x09,
-	ES_MEASUREMENT_APP_VERTICAL_DATUM_ELEVATION_SOURCE = 0x0A,
-	ES_MEASUREMENT_APP_ONSHORE = 0x0B,
-	ES_MEASUREMENT_APP_ONBOARD_VESSEL_OR_VEHICLE = 0x0C,
-	ES_MEASUREMENT_APP_FRONT = 0x0D,
-	ES_MEASUREMENT_APP_BACK_REAR = 0x0E,
-	ES_MEASUREMENT_APP_UPPER = 0x0F,
-	ES_MEASUREMENT_APP_LOWER = 0x10,
-	ES_MEASUREMENT_APP_PRIMARY = 0x11,
-	ES_MEASUREMENT_APP_SECONDARY = 0x12,
-	ES_MEASUREMENT_APP_OUTDOOR = 0x13,
-	ES_MEASUREMENT_APP_INDOOR = 0x14,
-	ES_MEASUREMENT_APP_TOP = 0x15,
-	ES_MEASUREMENT_APP_BOTTOM = 0x16,
-	ES_MEASUREMENT_APP_MAIN = 0x17,
-	ES_MEASUREMENT_APP_BACKUP = 0x18,
-	ES_MEASUREMENT_APP_AUXILIARY = 0x19,
-	ES_MEASUREMENT_APP_SUPPLEMENTARY = 0x1A,
-	ES_MEASUREMENT_APP_INSIDE = 0x1B,
-	ES_MEASUREMENT_APP_OUTSIDE = 0x1C,
-	ES_MEASUREMENT_APP_LEFT = 0x1D,
-	ES_MEASUREMENT_APP_RIGHT = 0x1E,
-	ES_MEASUREMENT_APP_INTERNAL = 0x1F,
-	ES_MEASUREMENT_APP_EXTERNAL = 0x20,
-	ES_MEASUREMENT_APP_SOLAR = 0x21,
-};
-
-/* ES Measurement Descriptor - Measurement Uncertainty */
-enum bt_es_measurement_uncertainty {
-	ES_MEASUREMENT_UNCERTAINTY_UNKNOWN = 0xFF,
-};
-
-/* ES Trigger Setting Descriptor - Trigger Condition */
-enum bt_es_trigger_setting_condition {
-	ES_TRIGGER_INACTIVE = 0x00,
-	ES_TRIGGER_INTERVAL_FIXED = 0x01,
-	ES_TRIGGER_INTERVAL_MIN = 0x02,
-	ES_TRIGGER_VALUE_CHANGE = 0x03,
-	ES_TRIGGER_VALUE_LT_SPEC = 0x04,
-	ES_TRIGGER_VALUE_LTE_SPEC = 0x05,
-	ES_TRIGGER_VALUE_GT_SPEC = 0x06,
-	ES_TRIGGER_VALUE_GTE_SPEC = 0x07,
-	ES_TRIGGER_VALUE_EQ_SPEC = 0x08,
-	ES_TRIGGER_VALUE_NEQ_SPEC = 0x09,
-};
+/* ESS Measurement Descriptor
+ * https://www.bluetooth.com/specifications/specs/html/?src=ESS_v1.0.1/out/en/index-en.html#UUID-2407bbfc-b4c8-2b7c-7bda-feb4d3cbcfb5
+ */
+#define ES_MEASUREMENT_FLAGS_EMPTY            0x00
+#define ES_MEASUREMENT_SAMPLING_INSTANTANEOUS 0x01
+#define ES_MEASUREMENT_PERIOD_UNSPECIFIED     0x00
+#define ES_MEASUREMENT_APP_AIR                0x01
+#define ES_MEASUREMENT_UNCERTAINTY_UNKNOWN    0xFF
 
 /* https://www.bluetooth.com/specifications/specs/html/?src=ESS_v1.0.1/out/en/index-en.html#UUID-2407bbfc-b4c8-2b7c-7bda-feb4d3cbcfb5_Table_3.3
  */
 struct bt_es_measurement_desc {
 	uint16_t flags;
 	uint8_t sampling_func;
-	// uint24
-	uint8_t meas_period[3];
-	// uint24
-	uint8_t update_interval[3];
+	uint24_t meas_period;
+	uint24_t update_interval;
 	uint8_t application;
 	uint8_t meas_uncertainty;
 } __packed;
 
-/* https://www.bluetooth.com/specifications/specs/html/?src=ESS_v1.0.1/out/en/index-en.html#UUID-0ad8b9f9-19ad-daf7-c103-6addaa3d4154_table-idm53478966500680
+/* ES Trigger Setting Descriptor
+ * https://www.bluetooth.com/specifications/specs/html/?src=ESS_v1.0.1/out/en/index-en.html#UUID-0ad8b9f9-19ad-daf7-c103-6addaa3d4154
  */
+#define ES_TRIGGER_INTERVAL_FIXED 0x01
+
 struct bt_es_trigger_setting_desc {
 	uint8_t cond;
-	union {
-		struct {
-		} inactive;
-		uint8_t fixed[3];
-		uint8_t min[3];
-		struct {
-		} change;
-	} operand;
-};
+	uint24_t fixed;
+} __packed;
 
 /* https://btprodspecificationrefs.blob.core.windows.net/gatt-specification-supplement/GATT_Specification_Supplement.pdf
  */
@@ -153,17 +84,16 @@ const static uint32_t bt_es_sensor_press_range[2] = {sys_cpu_to_le32(300000),
 						     sys_cpu_to_le32(1100000)};
 
 const static struct bt_es_measurement_desc sens_desc = {
-	.flags = sys_cpu_to_le16(0x0),
+	.flags = sys_cpu_to_le16(ES_MEASUREMENT_FLAGS_EMPTY),
 	.sampling_func = ES_MEASUREMENT_SAMPLING_INSTANTANEOUS,
 	.meas_period = {sys_cpu_to_le24(ES_MEASUREMENT_PERIOD_UNSPECIFIED)},
 	.update_interval = {sys_cpu_to_le24(CONFIG_APP_SENSOR_INTERVAL)},
-	.application = ES_MEASUREMENT_APP_INDOOR,
+	.application = ES_MEASUREMENT_APP_AIR,
 	.meas_uncertainty = ES_MEASUREMENT_UNCERTAINTY_UNKNOWN,
 };
 
 const static struct bt_es_trigger_setting_desc sens_trig = {
-	.cond = ES_TRIGGER_INTERVAL_FIXED,
-	.operand.fixed = {sys_cpu_to_le24(CONFIG_APP_SENSOR_INTERVAL)}};
+	.cond = ES_TRIGGER_INTERVAL_FIXED, .fixed = {sys_cpu_to_le24(CONFIG_APP_SENSOR_INTERVAL)}};
 
 static K_MUTEX_DEFINE(env_data_mtx);
 static struct bt_es_sensor_data_char env_data;
@@ -177,19 +107,7 @@ static ssize_t read_es_measurement(struct bt_conn *conn, const struct bt_gatt_at
 
 static size_t bt_es_trigger_setting_size(const struct bt_es_trigger_setting_desc *desc)
 {
-	size_t size = sizeof(desc->cond);
-	switch (desc->cond) {
-	case ES_TRIGGER_INACTIVE:
-		__fallthrough;
-	case ES_TRIGGER_VALUE_CHANGE:
-		return size;
-	case ES_TRIGGER_INTERVAL_FIXED:
-		__fallthrough;
-	case ES_TRIGGER_INTERVAL_MIN:
-		return size + sizeof(desc->operand.min);
-	default:
-		return -ENOSYS;
-	}
+	return sizeof(desc->cond) + sizeof(desc->fixed);
 }
 
 static ssize_t read_es_trigger_setting(struct bt_conn *conn, const struct bt_gatt_attr *attr,
